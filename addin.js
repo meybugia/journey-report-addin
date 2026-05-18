@@ -5,6 +5,8 @@
 
 /* global geotab, L, Chart */
 
+var geotab = geotab || {};
+geotab.addin = geotab.addin || {};
 geotab.addin.journey_report_index = (() => {
   'use strict';
 
