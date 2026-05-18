@@ -5,7 +5,7 @@
 
 /* global geotab, L, Chart */
 
-geotab.addin.journey_report = (() => {
+geotab.addin.journey_report_index = (() => {
   'use strict';
 
   // ── State ────────────────────────────────────────────────
