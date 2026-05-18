@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="addin.css">
+</head>
+<body>
+<div class="jr-container">
+
+  <!-- Header -->
+  <div class="jr-header">
+    <div class="jr-logo-bar"></div>
+    <h1>Journey Report</h1>
+  </div>
+
+  <!-- Filter Form -->
+  <div class="jr-card jr-form-card">
+    <div class="jr-card-title">Generate Report</div>
+    <div class="jr-form">
+      <div class="jr-field">
+        <label for="jr-device">Vehicle</label>
+        <select id="jr-device">
+          <option value="">Loading vehicles…</option>
+        </select>
+      </div>
+      <div class="jr-field">
+        <label for="jr-date-from">Date From</label>
+        <input type="date" id="jr-date-from">
+      </div>
+      <div class="jr-field">
+        <label for="jr-date-to">Date To</label>
+        <input type="date" id="jr-date-to">
+      </div>
+      <div class="jr-field">
+        <label for="jr-shipment">Shipment Ref (optional)</label>
+        <input type="text" id="jr-shipment" placeholder="e.g. 11856433">
+      </div>
+      <button class="jr-btn jr-btn-primary" id="jr-generate-btn" onclick="journeyReport.generate()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Generate
+      </button>
+    </div>
+    <div class="jr-loading" id="jr-loading">
+      <div class="jr-spinner"></div>
+      <span id="jr-loading-msg">Fetching data…</span>
+    </div>
+    <div class="jr-error" id="jr-error"></div>
+  </div>
+
+  <!-- Report Preview -->
+  <div id="jr-report">
+
+    <div class="jr-report-actions">
+      <button class="jr-btn jr-btn-secondary" onclick="journeyReport.printReport()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Save as PDF
+      </button>
+    </div>
+
+    <!-- Page 1: Trip Summary -->
+    <div class="jr-card">
+      <div class="jr-card-title">Trip Summary for Driver <span id="jr-driver-name" style="font-weight:600;color:#1a1a1a;text-transform:none;letter-spacing:0">_______________</span></div>
+
+      <div class="jr-info-grid" style="margin-bottom:20px">
+        <div class="jr-info-label">Vehicle ID</div>
+        <div class="jr-info-value" id="jr-vehicle-id">—</div>
+        <div class="jr-info-label">Date/Time Start</div>
+        <div class="jr-info-value" id="jr-trip-start">—</div>
+        <div class="jr-info-label">Shipment</div>
+        <div class="jr-info-value" id="jr-shipment-val">—</div>
+        <div class="jr-info-label">Date/Time End</div>
+        <div class="jr-info-value" id="jr-trip-end">—</div>
+        <div class="jr-info-label">Select Time Duration</div>
+        <div class="jr-info-value" id="jr-duration">—</div>
+        <div class="jr-info-label">Generated on</div>
+        <div class="jr-info-value" id="jr-generated-on">—</div>
+      </div>
+
+      <div class="jr-section-title" style="margin-top:16px">Driver Behavior</div>
+      <table class="jr-table" style="margin-bottom:20px">
+        <thead>
+          <tr>
+            <th>Driver Behavior</th>
+            <th>Result</th>
+            <th>Unit</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody id="jr-behavior-rows">
+          <tr><td>Over Speeding</td><td id="exc-speeding">—</td><td>#</td><td></td></tr>
+          <tr><td>Speeding in Geofence</td><td id="exc-geofence-speed">—</td><td>#</td><td></td></tr>
+          <tr><td>Harsh Braking</td><td id="exc-braking">—</td><td>#</td><td></td></tr>
+          <tr><td>Harsh Acceleration</td><td id="exc-acceleration">—</td><td>#</td><td></td></tr>
+          <tr><td>Harsh Turning</td><td id="exc-turning">—</td><td>#</td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="jr-section-title">Trip Statistics</div>
+      <table class="jr-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Result</th>
+            <th>Unit</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Total Trip Time</td><td id="stat-trip-time">—</td><td>HH:mm:ss</td><td></td></tr>
+          <tr><td>Total Distance Travelled</td><td id="stat-distance">—</td><td>km</td><td></td></tr>
+          <tr><td>Fuel Consumption</td><td id="stat-fuel">—</td><td>L</td><td></td></tr>
+          <tr><td>Fuel Yield</td><td id="stat-fuel-yield">—</td><td>km/L</td><td></td></tr>
+          <tr><td>Idling Time</td><td id="stat-idling">—</td><td>HH:mm:ss</td><td></td></tr>
+          <tr><td style="padding-left:24px">Terminal</td><td id="stat-idling-terminal">—</td><td>#</td><td></td></tr>
+          <tr><td style="padding-left:24px">Road</td><td id="stat-idling-road">—</td><td>#</td><td></td></tr>
+          <tr><td style="padding-left:24px">Customer</td><td id="stat-idling-customer">—</td><td>#</td><td></td></tr>
+          <tr><td>Idling Time Percentage</td><td id="stat-idling-pct">—</td><td>%</td><td></td></tr>
+          <tr><td>Idling Fuel Consumption</td><td id="stat-idling-fuel">—</td><td>L</td><td></td></tr>
+          <tr><td>Fuel Yield w/o Idling at Terminal/Customer</td><td id="stat-fuel-yield-no-idling">—</td><td>km/L</td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:16px">
+        <table class="jr-table">
+          <tr>
+            <td style="font-weight:500;width:140px">Overall Remarks</td>
+            <td style="height:60px"></td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-top:16px">
+        <table class="jr-table">
+          <tr>
+            <td style="width:50%;padding:14px">
+              <div style="font-size:12px;color:#555;margin-bottom:6px">Same Findings as previous trip? (Y/N/NA)</div>
+              <div style="border-bottom:1px solid #aaa;height:24px"></div>
+            </td>
+            <td style="width:50%;padding:14px">
+              <div style="font-size:12px;color:#555;margin-bottom:6px">Journey Controller (Date/Name/Signature)</div>
+              <div style="border-bottom:1px solid #aaa;height:24px"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px">
+              <div style="font-size:12px;color:#555;margin-bottom:6px">Remedial Training Required? (Y/N)</div>
+              <div style="border-bottom:1px solid #aaa;height:24px"></div>
+            </td>
+            <td style="padding:14px">
+              <div style="font-size:12px;color:#555;margin-bottom:6px">Driver (Date/Name/Signature)</div>
+              <div style="border-bottom:1px solid #aaa;height:24px"></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Page 2: Journey Map + Charts -->
+    <div class="jr-card">
+      <div class="jr-card-title">Journey Map</div>
+      <div id="jr-map-info" style="font-size:13px;color:#555;margin-bottom:10px"></div>
+      <div id="jr-map"></div>
+      <div id="jr-map-stats" style="font-size:13px;margin-top:10px;color:#333"></div>
+
+      <div class="jr-timeline" id="jr-timeline" style="margin-top:20px">
+        <div class="jr-section-title">Activity Timeline</div>
+        <div class="jr-timeline-row">
+          <span class="jr-timeline-label">Running</span>
+          <div class="jr-timeline-bar-container" id="tl-running"></div>
+          <span class="jr-timeline-value" id="tl-running-val">—</span>
+        </div>
+        <div class="jr-timeline-row">
+          <span class="jr-timeline-label">Idling</span>
+          <div class="jr-timeline-bar-container" id="tl-idling"></div>
+          <span class="jr-timeline-value" id="tl-idling-val">—</span>
+        </div>
+        <div class="jr-timeline-row">
+          <span class="jr-timeline-label">Engine On</span>
+          <div class="jr-timeline-bar-container" id="tl-engine"></div>
+          <span class="jr-timeline-value" id="tl-engine-val">—</span>
+        </div>
+        <div class="jr-timeline-row">
+          <span class="jr-timeline-label">Parking</span>
+          <div class="jr-timeline-bar-container" id="tl-parking"></div>
+          <span class="jr-timeline-value" id="tl-parking-val">—</span>
+        </div>
+      </div>
+
+      <div class="jr-section-title" style="margin-top:20px">Speed Profile (km/h)</div>
+      <canvas id="jr-speed-chart"></canvas>
+    </div>
+
+    <!-- Page 3+: Event Log -->
+    <div class="jr-card">
+      <div class="jr-card-title">Event Log</div>
+      <div id="jr-event-summary" style="font-size:13px;color:#555;margin-bottom:10px"></div>
+      <table class="jr-table" id="jr-event-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Time</th>
+            <th>Address</th>
+            <th>Driver</th>
+            <th>Speed (km/h)</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="jr-event-body">
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- #jr-report -->
+</div><!-- .jr-container -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="addin.js"></script>
+</body>
+</html>
