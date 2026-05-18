@@ -1,0 +1,338 @@
+/* Zenith-aligned styles for Journey Report Add-In */
+
+:root {
+  --z-blue: #0078d4;
+  --z-blue-dark: #005a9e;
+  --z-blue-light: #e8f3fb;
+  --z-text: #1a1a1a;
+  --z-text-secondary: #555555;
+  --z-border: #d1d1d1;
+  --z-bg: #f5f5f5;
+  --z-white: #ffffff;
+  --z-success: #107c10;
+  --z-warning: #d83b01;
+  --z-radius: 4px;
+  --z-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  --z-font: 'Roboto', 'Segoe UI', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--z-font);
+  font-size: 14px;
+  color: var(--z-text);
+  background: var(--z-bg);
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.jr-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.jr-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.jr-header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--z-text);
+}
+
+.jr-logo-bar {
+  width: 4px;
+  height: 28px;
+  background: var(--z-blue);
+  border-radius: 2px;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.jr-card {
+  background: var(--z-white);
+  border: 1px solid var(--z-border);
+  border-radius: var(--z-radius);
+  box-shadow: var(--z-shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.jr-card-title {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--z-text-secondary);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--z-border);
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
+.jr-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.jr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.jr-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--z-text-secondary);
+}
+
+.jr-field select,
+.jr-field input[type="date"],
+.jr-field input[type="text"] {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--z-border);
+  border-radius: var(--z-radius);
+  font-family: var(--z-font);
+  font-size: 14px;
+  color: var(--z-text);
+  background: var(--z-white);
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.jr-field select:focus,
+.jr-field input:focus {
+  border-color: var(--z-blue);
+  box-shadow: 0 0 0 2px rgba(0,120,212,0.15);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.jr-btn {
+  height: 36px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--z-radius);
+  font-family: var(--z-font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jr-btn-primary {
+  background: var(--z-blue);
+  color: var(--z-white);
+}
+.jr-btn-primary:hover { background: var(--z-blue-dark); }
+.jr-btn-primary:disabled { background: #a0c4e8; cursor: not-allowed; }
+
+.jr-btn-secondary {
+  background: var(--z-white);
+  color: var(--z-blue);
+  border: 1px solid var(--z-blue);
+}
+.jr-btn-secondary:hover { background: var(--z-blue-light); }
+
+/* ── Status messages ──────────────────────────────────────── */
+.jr-loading {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  color: var(--z-text-secondary);
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+.jr-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--z-border);
+  border-top-color: var(--z-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.jr-error {
+  display: none;
+  color: var(--z-warning);
+  background: #fdf3f0;
+  border: 1px solid #f4b8a8;
+  border-radius: var(--z-radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* ── Report Preview ───────────────────────────────────────── */
+#jr-report {
+  display: none;
+}
+
+.jr-report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* ── Summary Table ────────────────────────────────────────── */
+.jr-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.jr-info-row {
+  display: contents;
+}
+
+.jr-info-label {
+  padding: 7px 10px;
+  background: #f9f9f9;
+  border: 1px solid var(--z-border);
+  margin: -1px 0 0 -1px;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--z-text-secondary);
+}
+
+.jr-info-value {
+  padding: 7px 10px;
+  border: 1px solid var(--z-border);
+  margin: -1px 0 0 -1px;
+  font-size: 13px;
+}
+
+/* ── Data Table ───────────────────────────────────────────── */
+.jr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.jr-table th {
+  background: #f0f0f0;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 500;
+  border: 1px solid var(--z-border);
+  color: var(--z-text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.jr-table td {
+  padding: 7px 10px;
+  border: 1px solid var(--z-border);
+}
+
+.jr-table tr:nth-child(even) td { background: #fafafa; }
+
+.jr-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.jr-badge-ok { background: #e6f4ea; color: var(--z-success); }
+.jr-badge-warn { background: #fdf3f0; color: var(--z-warning); }
+
+/* ── Map ──────────────────────────────────────────────────── */
+#jr-map {
+  height: 400px;
+  border-radius: var(--z-radius);
+  border: 1px solid var(--z-border);
+}
+
+/* ── Activity Timeline ────────────────────────────────────── */
+.jr-timeline {
+  margin-top: 16px;
+}
+
+.jr-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.jr-timeline-label {
+  width: 70px;
+  color: var(--z-text-secondary);
+  font-weight: 500;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.jr-timeline-bar-container {
+  flex: 1;
+  height: 14px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.jr-timeline-segment {
+  position: absolute;
+  height: 100%;
+}
+
+.jr-timeline-value {
+  width: 60px;
+  color: var(--z-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ── Speed Chart ──────────────────────────────────────────── */
+#jr-speed-chart {
+  margin-top: 16px;
+  max-height: 200px;
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.jr-section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--z-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jr-section-title::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 16px;
+  background: var(--z-blue);
+  border-radius: 2px;
+}
+
+/* ── Print styles ─────────────────────────────────────────── */
+@media print {
+  .jr-form-card,
+  .jr-report-actions { display: none !important; }
+
+  body { background: white; }
+  .jr-card { box-shadow: none; border: 1px solid #ccc; }
+}

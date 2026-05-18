@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Journey Report — Print</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Base ─────────────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 0;
+    }
+
+    /* ── Page setup ───────────────────────────────────────── */
+    @page {
+      size: A4 portrait;
+      margin: 15mm 15mm 15mm 15mm;
+    }
+
+    .page-break { page-break-before: always; }
+
+    /* ── Report wrapper ───────────────────────────────────── */
+    .report-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .rpt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #0078d4;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+
+    .rpt-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rpt-header-bar {
+      width: 4px;
+      height: 30px;
+      background: #0078d4;
+      border-radius: 2px;
+    }
+
+    .rpt-title {
+      font-size: 16pt;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .rpt-subtitle {
+      font-size: 9pt;
+      color: #555;
+    }
+
+    .rpt-logo {
+      font-size: 9pt;
+      color: #888;
+      text-align: right;
+    }
+
+    /* ── Section headings ─────────────────────────────────── */
+    .rpt-section {
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0078d4;
+      margin: 16px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #c8e0f4;
+    }
+
+    /* ── Info grid ────────────────────────────────────────── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+    }
+
+    .info-table td {
+      padding: 5px 8px;
+      border: 1px solid #d1d1d1;
+      font-size: 10pt;
+    }
+
+    .info-table td.label {
+      background: #f5f5f5;
+      font-weight: 500;
+      color: #444;
+      width: 35%;
+    }
+
+    /* ── Data tables ──────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 10pt;
+    }
+
+    .data-table th {
+      background: #f0f0f0;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 500;
+      border: 1px solid #d1d1d1;
+      font-size: 9pt;
+      color: #555;
+    }
+
+    .data-table td {
+      padding: 5px 8px;
+      border: 1px solid #d1d1d1;
+    }
+
+    .data-table tr:nth-child(even) td { background: #fafafa; }
+
+    .indent { padding-left: 22px !important; }
+
+    /* ── Signature block ──────────────────────────────────── */
+    .sig-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .sig-table td {
+      padding: 10px;
+      border: 1px solid #d1d1d1;
+      vertical-align: top;
+      width: 50%;
+    }
+
+    .sig-label {
+      font-size: 9pt;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .sig-line {
+      border-top: 1px solid #aaa;
+    }
+
+    /* ── Map image ────────────────────────────────────────── */
+    .map-placeholder {
+      width: 100%;
+      height: 260px;
+      background: #f0f4f8;
+      border: 1px solid #d1d1d1;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-size: 10pt;
+      margin-bottom: 10px;
+    }
+
+    .map-img { width: 100%; border: 1px solid #d1d1d1; border-radius: 3px; }
+
+    /* ── Activity bar ─────────────────────────────────────── */
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 9pt;
+    }
+
+    .tl-label { width: 70px; color: #555; font-weight: 500; text-align: right; flex-shrink: 0; }
+    .tl-bar-wrap { flex: 1; height: 12px; background: #f0f0f0; border-radius: 2px; overflow: hidden; position: relative; }
+    .tl-bar { position: absolute; left: 0; top: 0; height: 100%; }
+    .tl-val { width: 60px; color: #555; flex-shrink: 0; }
+
+    /* ── Print controls (screen only) ────────────────────── */
+    .print-controls {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 999;
+    }
+
+    .print-btn {
+      padding: 8px 18px;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .print-btn:hover { background: #005a9e; }
+
+    .close-btn {
+      padding: 8px 14px;
+      background: #fff;
+      color: #555;
+      border: 1px solid #d1d1d1;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    @media print {
+      .print-controls { display: none !important; }
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .rpt-footer {
+      margin-top: 20px;
+      padding-top: 8px;
+      border-top: 1px solid #d1d1d1;
+      font-size: 8pt;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ── Event log smaller font ───────────────────────────── */
+    #print-event-table { font-size: 9pt; }
+    #print-event-table td { padding: 4px 6px; }
+    #print-event-table th { font-size: 8pt; padding: 5px 6px; }
+  </style>
+</head>
+<body>
+
+<div class="print-controls">
+  <button class="print-btn" onclick="window.print()">&#128438; Print / Save as PDF</button>
+  <button class="close-btn" onclick="window.close()">Close</button>
+</div>
+
+<div class="report-page" id="report-root">
+  <div id="loading-msg" style="padding:40px;text-align:center;color:#888;font-size:14px">Loading report data…</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function fmt(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
+  function dur(secs) {
+    if (!secs && secs !== 0) return '—';
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function tlBar(seconds, total, color) {
+    const pct = Math.min(100, ((seconds || 0) / (total || 1)) * 100).toFixed(1);
+    return `<div class="tl-bar" style="width:${pct}%;background:${color}"></div>`;
+  }
+
+  const root = document.getElementById('report-root');
+
+  let data;
+  try {
+    const raw = localStorage.getItem('jr_print_data');
+    if (!raw) throw new Error('No report data found. Please generate the report first.');
+    data = JSON.parse(raw);
+  } catch (e) {
+    root.innerHTML = `<div style="padding:40px;color:#d83b01;font-size:14px">Error: ${e.message}</div>`;
+    return;
+  }
+
+  const total = data.totalDurationSec || 1;
+  const running = data.totalDrivingSec || 0;
+  const idling  = data.totalIdlingSec  || 0;
+  const engine  = running + idling;
+  const parking = Math.max(0, total - engine);
+
+  // Build event rows HTML
+  let eventRows = '';
+  (data.events || []).forEach(ev => {
+    eventRows += `<tr>
+      <td>${esc(ev.type)}</td>
+      <td>${fmt(ev.dateTime)}</td>
+      <td style="font-size:8pt">${esc(ev.address || '—')}</td>
+      <td>${esc(ev.driver || '—')}</td>
+      <td>${ev.speed !== null && ev.speed !== undefined ? ev.speed : '—'}</td>
+      <td>${esc(ev.description || '')}</td>
+    </tr>`;
+  });
+
+  const mapSection = data.mapImageUrl
+    ? `<img src="${data.mapImageUrl}" class="map-img" alt="Route map">`
+    : `<div class="map-placeholder">Route map (view in add-in for interactive map)</div>`;
+
+  const bc = data.behaviorCounts || {};
+
+  root.innerHTML = `
+    <!-- ══ PAGE 1: TRIP SUMMARY ══════════════════════════ -->
+    <div class="rpt-header">
+      <div class="rpt-header-left">
+        <div class="rpt-header-bar"></div>
+        <div>
+          <div class="rpt-title">Journey Report</div>
+          <div class="rpt-subtitle">Trip Summary for Driver ___________________________</div>
+        </div>
+      </div>
+      <div class="rpt-logo">Generated on<br><strong>${fmt(data.generatedAt)}</strong></div>
+    </div>
+
+    <table class="info-table">
+      <tr><td class="label">Vehicle ID</td><td>${esc(data.deviceName)}</td><td class="label">Shipment</td><td>${esc(data.shipment || '—')}</td></tr>
+      <tr><td class="label">Date/Time Start</td><td>${fmt(data.tripStart)}</td><td class="label">Generated on</td><td>${fmt(data.generatedAt)}</td></tr>
+      <tr><td class="label">Date/Time End</td><td>${fmt(data.tripEnd)}</td><td class="label"></td><td></td></tr>
+      <tr><td class="label">Select Time Duration</td><td>${dur(data.totalDurationSec)}</td><td class="label"></td><td></td></tr>
+    </table>
+
+    <div class="rpt-section">Driver Behavior</div>
+    <table class="data-table">
+      <thead><tr><th>Driver Behavior</th><th>Result</th><th>Unit of Measurement</th><th>Comments</th></tr></thead>
+      <tbody>
+        <tr><td>Over Speeding</td><td>${bc.speeding || 0}</td><td>#</td><td></td></tr>
+        <tr><td>Speeding in Geofence</td><td>${bc.geofenceSpeed || 0}</td><td>#</td><td></td></tr>
+        <tr><td>Harsh Braking</td><td>${bc.braking || 0}</td><td>#</td><td></td></tr>
+        <tr><td>Harsh Acceleration</td><td>${bc.acceleration || 0}</td><td>#</td><td></td></tr>
+        <tr><td>Harsh Turning</td><td>${bc.turning || 0}</td><td>#</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="rpt-section">Trip Statistics</div>
+    <table class="data-table">
+      <thead><tr><th>Driver Behavior</th><th>Result</th><th>Unit of Measurement</th><th>Comments</th></tr></thead>
+      <tbody>
+        <tr><td>Total Trip Time</td><td>${dur(data.totalDrivingSec)}</td><td>HH:mm:ss</td><td></td></tr>
+        <tr><td>Total Distance Travelled</td><td>${data.totalDistanceKm}</td><td>km</td><td></td></tr>
+        <tr><td>Fuel Consumption</td><td>${esc(data.fuelLDisplay)}</td><td>L</td><td></td></tr>
+        <tr><td>Fuel Yield</td><td>${esc(data.fuelYield)}</td><td>km/L</td><td></td></tr>
+        <tr><td>Idling Time</td><td>${dur(data.totalIdlingSec)}</td><td>HH:mm:ss</td><td></td></tr>
+        <tr><td class="indent">Terminal</td><td>—</td><td>#</td><td></td></tr>
+        <tr><td class="indent">Road</td><td>—</td><td>#</td><td></td></tr>
+        <tr><td class="indent">Customer</td><td>—</td><td>#</td><td></td></tr>
+        <tr><td>Idling Time Percentage</td><td>${data.idlingPct}</td><td>%</td><td></td></tr>
+        <tr><td>Idling Fuel Consumption</td><td>—</td><td>L</td><td></td></tr>
+        <tr><td>Fuel Yield w/o Idling at Terminal/Customer</td><td>—</td><td>km/L</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <table class="info-table">
+      <tr><td class="label">Overall Remarks</td><td style="height:50px"></td></tr>
+    </table>
+
+    <table class="sig-table">
+      <tr>
+        <td><div class="sig-label">Same Findings as previous trip? (Y/N/NA)</div><div class="sig-line"></div></td>
+        <td><div class="sig-label">Journey Controller (Date/Name/Signature)</div><div class="sig-line"></div></td>
+      </tr>
+      <tr>
+        <td><div class="sig-label">Remedial Training Required? (Y/N)</div><div class="sig-line"></div></td>
+        <td><div class="sig-label">Driver (Date/Name/Signature)</div><div class="sig-line"></div></td>
+      </tr>
+    </table>
+
+    <div class="rpt-footer">
+      <span>Journey Report — ${esc(data.deviceName)}</span>
+      <span>Page 1</span>
+    </div>
+
+    <!-- ══ PAGE 2: JOURNEY MAP + CHARTS ═════════════════════ -->
+    <div class="page-break"></div>
+
+    <div class="rpt-header">
+      <div class="rpt-header-left">
+        <div class="rpt-header-bar"></div>
+        <div>
+          <div class="rpt-title">Journey Report</div>
+          <div class="rpt-subtitle">${esc(data.deviceName)} &nbsp;|&nbsp; ${fmt(data.tripStart)} — ${fmt(data.tripEnd)}</div>
+        </div>
+      </div>
+      <div class="rpt-logo">Page 2</div>
+    </div>
+
+    <div class="rpt-section">Route Map</div>
+    ${mapSection}
+
+    <div style="font-size:9pt;color:#555;margin-bottom:12px">
+      <strong>Total Distance:</strong> ${data.totalDistanceKm} km &nbsp;|&nbsp;
+      <strong>Driving Time:</strong> ${dur(data.totalDrivingSec)} &nbsp;|&nbsp;
+      <strong>Idling Time:</strong> ${dur(data.totalIdlingSec)} &nbsp;|&nbsp;
+      <strong>Parking Time:</strong> ${dur(parking)}
+    </div>
+
+    <div class="rpt-section">Activity Timeline</div>
+    <div class="timeline-row">
+      <span class="tl-label">Running</span>
+      <div class="tl-bar-wrap">${tlBar(running, total, '#107c10')}</div>
+      <span class="tl-val">${dur(running)}</span>
+    </div>
+    <div class="timeline-row">
+      <span class="tl-label">Idling</span>
+      <div class="tl-bar-wrap">${tlBar(idling, total, '#ffb900')}</div>
+      <span class="tl-val">${dur(idling)}</span>
+    </div>
+    <div class="timeline-row">
+      <span class="tl-label">Engine On</span>
+      <div class="tl-bar-wrap">${tlBar(engine, total, '#d83b01')}</div>
+      <span class="tl-val">${dur(engine)}</span>
+    </div>
+    <div class="timeline-row">
+      <span class="tl-label">Parking</span>
+      <div class="tl-bar-wrap">${tlBar(parking, total, '#0078d4')}</div>
+      <span class="tl-val">${dur(parking)}</span>
+    </div>
+
+    <div class="rpt-footer" style="margin-top:20px">
+      <span>Journey Report — ${esc(data.deviceName)}</span>
+      <span>Page 2</span>
+    </div>
+
+    <!-- ══ PAGE 3: EVENT LOG ════════════════════════════════ -->
+    <div class="page-break"></div>
+
+    <div class="rpt-header">
+      <div class="rpt-header-left">
+        <div class="rpt-header-bar"></div>
+        <div>
+          <div class="rpt-title">Journey Report</div>
+          <div class="rpt-subtitle">Event Log — ${esc(data.deviceName)}</div>
+        </div>
+      </div>
+      <div class="rpt-logo">Page 3</div>
+    </div>
+
+    <div class="rpt-section">Event Log (${(data.events || []).length} events)</div>
+    <table class="data-table" id="print-event-table">
+      <thead>
+        <tr>
+          <th>Type</th><th>Time</th><th>Address</th><th>Driver</th><th>Speed (km/h)</th><th>Description</th>
+        </tr>
+      </thead>
+      <tbody>${eventRows}</tbody>
+    </table>
+
+    <div class="rpt-footer">
+      <span>Journey Report — ${esc(data.deviceName)}</span>
+      <span>Page 3</span>
+    </div>
+  `;
+
+  // Clean up localStorage after render
+  try { localStorage.removeItem('jr_print_data'); } catch(e) {}
+})();
+</script>
+</body>
+</html>
