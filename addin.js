@@ -26,13 +26,16 @@ geotab.addin.journey_report = (() => {
   // ── Lifecycle ────────────────────────────────────────────
   const initialize = (api, state, callback) => {
     _api = api;
+    callback();
     setDefaultDates();
     loadDevices();
-    callback();
   };
 
   const focus = (api, state) => {
     _api = api;
+    if (document.getElementById('jr-device').options.length <= 1) {
+      loadDevices();
+    }
   };
 
   const blur = (api, state) => {
